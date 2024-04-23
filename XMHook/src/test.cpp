@@ -1,4 +1,5 @@
 #include "main.h"
+#include <XMHook.hpp>
 
 using namespace injector;
 using namespace std;
