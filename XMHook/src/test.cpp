@@ -113,6 +113,13 @@ void Load()
         "40 55 53 41 56 48 8D AC 24 C0 F0 FF FF",
         (LPVOID)PathToHash_fun, 32, 18);
     PathToHash = (UINT64(*)(wchar_t *))PathToHash_hook->original;
+
+    // GetPad
+    int32_t padId = 0;
+    auto GetPad_hook = new XMHook::Hook();
+    int *pad = GetPad_hook->CallAndReturnDyn<int *>((unsigned int)(hook::pattern("83 7C 24 ? ? 7C 06").get_first(0)), padId);
+
+    //
 }
 
 std::string wideCharToMultiByte(wchar_t *pWCStrKey)
