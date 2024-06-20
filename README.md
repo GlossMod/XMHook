@@ -2,38 +2,90 @@
 
 一个简易的 Hook 库.
 
-之前在 XMDS 大佬的指导下完成的. 
+由 XMDS 大佬完成, 
 
-现在单独拿出来开源.
-
-里面还自带了一个简易个 `Logger` 库.
-
-### 使用方法
+### 使用示例
 
 ```cpp
+
+#pragma once
+#include <cstdio>
+#include <iostream>
+#include <thread>
 #include <XMHook.hpp>
 
-
-// 原始函数指针
-void *(*loadFile_step2)(void *, void *, int) = nullptr;
-
-// 代理函数
-void *loadFile_step2_fun(void *a, wchar_t *b, int c)
+static void *(*old_malloc)(_In_ _CRT_GUARDOVERFLOW size_t _Size) = nullptr;
+static void *__cdecl proxy_malloc(_In_ _CRT_GUARDOVERFLOW size_t _Size)
 {
-    // ... 做点什么
-
-    return loadFile_step2(a, b, c); // 返回原内容
+    printf("hook 1: malloc (%d)\n", _Size);
+    return old_malloc(_Size);
 }
 
-
-void Load()
+static void *(*old_malloc2)(_In_ _CRT_GUARDOVERFLOW size_t _Size) = nullptr;
+static void *__cdecl proxy_malloc2(_In_ _CRT_GUARDOVERFLOW size_t _Size)
 {
-    // hook loadFile_step2
-    auto loadFile_step2_hook = new XMHook::Hook();
-    loadFile_step2_hook->HookByPattern(
-        "48 89 5C 24 08 48 89 6C 24 10 48 89 74 24 18 57 48 83 EC 20 48 8B F1 44 89 41 08",
-        (LPVOID)loadFile_step2_fun, 128, 15);
-    loadFile_step2 = (void *(*)(void *, void *, int))loadFile_step2_hook->original;
+    printf("hook 2: malloc (%d)\n", _Size);
+    return old_malloc2(_Size);
+}
+
+static void Hook_malloc()
+{
+    printf("Start hook malloc:\n");
+    auto h = XM_InlineHook((xm_hook_func)malloc, (xm_hook_func)proxy_malloc, (xm_hook_func *)&old_malloc);
+    auto h2 = XM_InlineHook((xm_hook_func)malloc, (xm_hook_func)proxy_malloc2, (xm_hook_func *)&old_malloc2);
+    void *test_ptr = malloc(2024);
+    free(test_ptr);
+    XM_Unhook(h2);
+    test_ptr = malloc(1024);
+    XM_Unhook(h);
+    free(test_ptr);
+    printf("\n");
+}
+
+static int (*old_MessageBoxA)(_In_opt_ HWND hWnd, _In_opt_ LPCSTR lpText, _In_opt_ LPCSTR lpCaption, _In_ UINT uType) = nullptr;
+static int proxy_MessageBoxA(_In_opt_ HWND hWnd, _In_opt_ LPCSTR lpText, _In_opt_ LPCSTR lpCaption, _In_ UINT uType)
+{
+    lpText = "Hooked message box";
+    lpCaption = "XMHook sample";
+    return old_MessageBoxA(hWnd, lpText, lpCaption, uType);
+}
+
+static void Hook_MessageBoxA()
+{
+    printf("Start hook MessageBoxA:\n");
+    auto h = XM_InlineHook((xm_hook_func)MessageBoxA, (xm_hook_func)proxy_MessageBoxA, (xm_hook_func *)&old_MessageBoxA);
+    MessageBoxA(0, "XMHook", "XMHook Test", 0);
+    XM_Unhook(h);
+    printf("\n");
+}
+
+static void MultiThreadHook()
+{
+    printf("Start multi-thread hook malloc:\n");
+    std::thread t1([]()
+                   {
+        XM_InlineHook((xm_hook_func)malloc, (xm_hook_func)proxy_malloc, (xm_hook_func*)&old_malloc);
+        void* test_ptr = malloc(1);
+        free(test_ptr); });
+    std::thread t2([]()
+                   {
+        XM_InlineHook((xm_hook_func)malloc, (xm_hook_func)proxy_malloc2, (xm_hook_func*)&old_malloc2);
+        void* test_ptr = malloc(2);
+        free(test_ptr); });
+    t1.join();
+    t2.join();
+}
+
+int main()
+{
+    std::cout << "Hello XMHook!\n";
+
+    Hook_malloc();
+    MultiThreadHook();
+    // Hook_MessageBoxA();
+
+    system("pause");
+    return 0;
 }
 
 ```
