@@ -6,12 +6,12 @@
 #define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable : 4996)
 
-#include "injector/injector.hpp"
+#include "injector.hpp"
 
 #if defined(_WIN64) || defined(__x86_64__)
-#include "hde/hde64.h"
+#include "hde64.h"
 #elif defined(_WIN32) || defined(__i386__)
-#include "hde/hde32.h"
+#include "hde32.h"
 #endif
 
 #if defined(_WIN64) || defined(__x86_64__)

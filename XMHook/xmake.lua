@@ -2,10 +2,10 @@
 add_rules("mode.debug", "mode.release")
 
 target("XMHook")
-    set_kind("shared")
+    set_kind("static")
     -- set_kind("binary")
     add_files("src/**.c")
-    add_headerfiles("src/**.hpp")
+    add_headerfiles("src/**.hpp", "src/**.h")
 
 set_languages("cxx20", "c++20")
 
