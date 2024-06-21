@@ -4,5 +4,5 @@ build/
 x64/
 # MacOS Cache
 .DS_Store
-
+.vscode
 
