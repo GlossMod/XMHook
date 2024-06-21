@@ -7,7 +7,7 @@ package("XMHook")
     set_urls("https://github.com/GlossMod/XMHook/archive/$(version).tar.gz",
              "https://github.com/GlossMod/XMHook.git")
 
-    add_versions("v1.3.3", "5bec16358ec9086d4593124bf558635e89135abea2c76e5761ecaf09f4546b19")
+    add_versions("v1.0.1", "48095470a280db53e32badfaf59c60b85cc22211")
 
     on_install("windows", "mingw", function (package)
         io.writefile("xmake.lua", [[
@@ -15,7 +15,7 @@ package("XMHook")
             target("XMHook")
                 set_kind("$(kind)")
                 add_files("src/**.c")
-                add_headerfiles("src/**.hpp")
+                add_headerfiles("src/**.hpp", "src/**.h")
         ]])
         local configs = {}
         if package:config("shared") then
